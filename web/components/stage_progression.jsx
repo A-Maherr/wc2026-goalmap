@@ -62,14 +62,14 @@ function StageProgression({ data, onPickDate, activeDate }) {
       <div className="flex items-end justify-between mb-4 gap-3 flex-wrap">
         <div>
           <div className="text-[11px] uppercase tracking-widest" style={{color: COLORS.muted2, letterSpacing:'0.14em'}}>Stage progression</div>
-          <div className="font-serif text-2xl mt-1" style={{fontWeight: 600}}>Goals by matchday</div>
+          <div className="font-serif text-lg sm:text-2xl mt-1" style={{fontWeight: 600}}>Goals by matchday</div>
           <div className="text-[11px] mt-1 font-mono" style={{color: COLORS.muted2}}>{rangeLabel}</div>
         </div>
         <div className="text-xs" style={{color: COLORS.muted}}>Hover a day for detail · click to filter the page</div>
       </div>
 
-      <div className="flex gap-4 items-start">
-        <div className="flex-1 min-w-0 space-y-5">
+      <div className="flex flex-col lg:flex-row gap-4 items-start">
+        <div className="flex-1 min-w-0 space-y-5 w-full">
           {stageGroups.map(({ stage, days }) => {
             const color = STAGE_COLORS[stage] || COLORS.gold;
             const stageGoals = days.reduce((a, d) => a + (byDate[d.date]?.total || 0), 0);
@@ -124,7 +124,7 @@ function StageProgression({ data, onPickDate, activeDate }) {
           })}
         </div>
 
-        <div className="panel-2 p-4 text-xs" style={{width: 230, flexShrink: 0, alignSelf: 'flex-start'}}>
+        <div className="panel-2 p-4 text-xs w-full lg:w-[230px]" style={{flexShrink: 0, alignSelf: 'flex-start'}}>
           {panel.kind === 'day' ? (
             <>
               <div className="text-[11px] uppercase tracking-widest" style={{color: COLORS.muted2, letterSpacing: '0.12em'}}>Matchday</div>
