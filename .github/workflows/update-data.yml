@@ -24,17 +24,17 @@ jobs:
     timeout-minutes: 12
     steps:
       - name: Check out the private data pipeline
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
         with:
           repository: A-Maherr/wc2026-pipeline
           token: ${{ secrets.PIPELINE_TOKEN }}
           persist-credentials: false
 
-      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
         with:
           python-version: '3.12'
 
-      - uses: browser-actions/setup-chrome@5526bcff02442ad0dc3cf912d1edc65d49465969  # v1.7.3
+      - uses: browser-actions/setup-chrome@2e1d749697dd1612b833dba4a722266286fbefcd  # v2.1.2
         with:
           chrome-version: stable
 
@@ -49,7 +49,7 @@ jobs:
       # latest via the prefix and saves an updated snapshot. GitHub LRU-evicts old
       # entries, so the count self-limits; bump v1 → v2 to invalidate manually.
       - name: Restore match cache
-        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57  # v4.2.0
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
           path: data/raw/match_cache
           key: match-cache-v1-${{ github.run_id }}
