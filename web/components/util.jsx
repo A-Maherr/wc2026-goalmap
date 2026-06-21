@@ -154,10 +154,18 @@ function fmtPrecision(p) {
   return ({exact_event_data:'Exact', zone_estimate:'Zone', unavailable:'No location'})[p] || p;
 }
 
+// Own goals read as "Own Goal" everywhere a scorer would show, regardless of
+// how the source tagged the conceding player. Non-own-goals are unchanged, so
+// the "other" body-part/finish category still applies to genuine cases.
+function scorerLabel(goal) {
+  if (goal && goal.own_goal) return 'Own Goal';
+  return (goal && goal.scorer) || '';
+}
+
 Object.assign(window, {
   COLORS, BODY_COLORS, SITUATION_COLORS, FINISH_COLORS, PRECISION_COLORS,
   STAGE_COLORS, STAGE_ORDER, FIFA3_TO_ISO2, flagUrl, FlagImg,
   NATION_COLORS, distFromGoal,
-  fmtDate, fmtBodyPart, fmtSituation, fmtFinish, fmtPrecision,
+  fmtDate, fmtBodyPart, fmtSituation, fmtFinish, fmtPrecision, scorerLabel,
   nationDotStyle, nationTextColor, lookupNationColor,
 });

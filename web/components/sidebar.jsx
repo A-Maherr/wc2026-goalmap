@@ -9,9 +9,9 @@ function Sidebar({ data, filters, setFilters, counts, goalsInMatchStats, open, o
   };
   const has = (set, val) => set instanceof Set && set.has(val);
 
-  const bodyParts = ['right_foot','left_foot','header','other','unknown'];
-  const situations = ['open_play','penalty','counterattack','direct_free_kick','corner','set_piece','unknown'];
-  const finishes = ['normal_shot','penalty','header','free_kick','rebound','volley','unknown'];
+  const bodyParts = ['right_foot','left_foot','header','other'];
+  const situations = ['open_play','penalty','counterattack','direct_free_kick','corner','set_piece'];
+  const finishes = ['normal_shot','penalty','header','free_kick','rebound','volley'];
 
   const activeCount =
     (filters.nation ? filters.nation.size : 0) +

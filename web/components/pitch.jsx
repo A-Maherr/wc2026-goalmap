@@ -12,6 +12,20 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
     []
   );
 
+  // Phones render the pitch as a fixed-viewBox SVG that scales with CSS (dots
+  // and lines scale together — robust at any width). Desktop keeps the measured
+  // pixel layout untouched.
+  const [isMobile, setIsMobile] = React.useState(
+    () => typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(max-width: 768px)').matches
+  );
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(max-width: 768px)');
+    const on = () => setIsMobile(mq.matches);
+    mq.addEventListener ? mq.addEventListener('change', on) : mq.addListener(on);
+    return () => { mq.removeEventListener ? mq.removeEventListener('change', on) : mq.removeListener(on); };
+  }, []);
+
   const dotsData = React.useMemo(() => data.filter(d => d.x != null && d.y != null), [data]);
   const X_MAX = 120;
   const X_MIN = React.useMemo(() => {
@@ -65,10 +79,14 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
     };
   }, [fifaRatio]);
 
-  const W = size.w, H = size.h;
-  // Scale fixed-pixel dots down with pitch width so they don't crowd on a
-  // narrow phone pitch; clamped so they never vanish. 520px = scale 1.
-  const dotScale = Math.max(0.6, Math.min(1, W / 520));
+  // Mobile: fixed 600-unit viewBox (the SVG scales via CSS). Desktop: measured
+  // pixel size. sx/sy below operate in whichever space W/H are in, so both paths
+  // share the same geometry math.
+  const W = isMobile ? 600 : size.w;
+  const H = isMobile ? ((600 - 2*PAD) * fifaRatio + 2*PAD) : size.h;
+  // Desktop scales fixed-pixel dots down with pitch width so they don't crowd;
+  // mobile dots are in viewBox units and scale with the SVG, so no extra scale.
+  const dotScale = isMobile ? 1 : Math.max(0.6, Math.min(1, W / 520));
   const sx = data_y => PAD + (data_y / VIEW_W_M) * (W - PAD*2);
   const sy = data_x => PAD + ((X_MAX - data_x) / VIEW_H_M) * (H - PAD*2);
 
@@ -234,7 +252,11 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
 
       <div className="flex gap-4 items-stretch">
         <div className="flex-1 relative flex justify-center" style={{minWidth: 0}}>
-          <svg ref={ref} width={W} height={H} style={{display:'block'}}
+          <svg ref={ref}
+            {...(isMobile
+              ? { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet',
+                  style: { display: 'block', width: '100%', height: 'auto', maxWidth: 640, margin: '0 auto' } }
+              : { width: W, height: H, style: { display: 'block' } })}
             onClick={()=>{ if (isTouch) { setHover(null); setTappedKey(null); } }}>
             <defs>
               <linearGradient id="grassGrad" x1="0" x2="0" y1="0" y2="1">
@@ -590,9 +612,9 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
                   </div>
                 );
               })()}
-              {hover.scorer && (
+              {(hover.scorer || hover.own_goal) && (
                 <div className="font-serif mb-1" style={{fontSize: 15, fontWeight: 600, lineHeight: 1.15}}>
-                  {hover.scorer}
+                  {scorerLabel(hover)}
                   {hover.minute != null && <span className="font-mono ml-2" style={{fontSize: 12, color: COLORS.muted}}>{hover.minute}'</span>}
                 </div>
               )}

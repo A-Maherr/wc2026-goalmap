@@ -95,10 +95,10 @@ function MatchesCard({ data, matches, onPickGoal, onPickMatch, activeMatches }) 
                 const chip = (goal) => (
                   <button key={goal.goal_number ?? `${goal.scorer}-${goal.minute}`}
                     onClick={(e) => { e.stopPropagation(); onPickGoal && onPickGoal(goal); }}
-                    title={`${goal.scorer || ''} ${goal.minute != null ? goal.minute + "'" : ''} — open goal`}
+                    title={`${scorerLabel(goal) || ''} ${goal.minute != null ? goal.minute + "'" : ''} — open goal`}
                     className="text-[10px] font-mono px-1.5 py-0.5 rounded transition hover:ring-gold"
                     style={{ border: `1px solid ${COLORS.line}`, color: COLORS.muted, background: 'rgba(255,255,255,0.03)' }}>
-                    {lastName(goal.scorer)} {goal.minute != null ? goal.minute + "'" : ''}{goal.live ? <span style={{ color: '#ff8d99' }}> ●</span> : null}
+                    {goal.own_goal ? 'Own Goal' : lastName(goal.scorer)} {goal.minute != null ? goal.minute + "'" : ''}{goal.live ? <span style={{ color: '#ff8d99' }}> ●</span> : null}
                   </button>
                 );
                 if (!homeG.length && !awayG.length) return null;
