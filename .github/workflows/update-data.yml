@@ -63,3 +63,26 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: xvfb-run -a python run.py
+
+      - name: Goal summary
+        if: always()
+        run: |
+          test -f web/data.json || { echo "no data.json this run"; exit 0; }
+          python - >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          import json, os
+          d = json.load(open("web/data.json", encoding="utf-8"))
+          total = len(d)
+          live = [g for g in d if g.get("live")]
+          coords = sum(1 for g in d if g.get("x") is not None)
+          pf = "data/raw/match_cache/_goalcount.txt"
+          prev = None
+          try: prev = int(open(pf).read().strip())
+          except Exception: pass
+          os.makedirs("data/raw/match_cache", exist_ok=True)
+          open(pf, "w").write(str(total))
+          delta = f"  ·  +{total - prev} new" if (prev is not None and total > prev) else ""
+          print(f"## {total} goals{delta}")
+          print(f"{coords} with coordinates · {len(live)} live at this run\n")
+          for g in sorted(live, key=lambda x: x.get("minute") or 0):
+              print(f"- `{g.get('minute','?')}'` **{g.get('scorer','?')}** — {g.get('team','?')} vs {g.get('opponent','?')}")
+          PY
