@@ -199,7 +199,7 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
       <div className="flex gap-4 items-stretch">
         <div className="flex-1 relative flex justify-center" style={{minWidth: 0}}>
           <svg ref={ref} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet"
-            style={{display:'block', width:'100%', height:'auto', maxWidth: 620, margin:'0 auto'}}
+            style={{display:'block', width:'100%', height:'auto', maxWidth: 840, margin:'0 auto'}}
             onClick={()=>{ if (isTouch) { setHover(null); setTappedKey(null); } }}>
             <defs>
               <linearGradient id="grassGrad" x1="0" x2="0" y1="0" y2="1">
