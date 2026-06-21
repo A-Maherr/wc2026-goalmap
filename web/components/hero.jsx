@@ -23,7 +23,7 @@ function Hero({ stats, freshness }) {
           />
           <div className="min-w-0">
             <h1 className="font-serif" style={{fontSize: 'clamp(19px, 2.1vw, 28px)', lineHeight: 1.05, letterSpacing: '-0.02em', fontWeight: 600}}>
-              FIFA World Cup 2026
+              World Cup 26 Goal Map
               <span className="gold-shimmer italic" style={{marginLeft: '0.3em'}}>— every goal, live.</span>
             </h1>
             <div className="flex items-center gap-2 flex-wrap" style={{marginTop: 4}}>
