@@ -40,6 +40,9 @@
   html, body { background: var(--bg-0); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; }
   /* `clip` not `hidden`: avoids making body a scroll container, which breaks the sticky sidebar. */
   html, body { overflow-x: clip; max-width: 100%; }
+  /* Pin text sizing — Chrome mobile otherwise auto-inflates text in large blocks,
+     which blows up the stat cards and breaks the layout proportions. */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   #root { overflow-x: clip; }
   body {
     background:

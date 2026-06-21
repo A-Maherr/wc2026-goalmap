@@ -53,10 +53,14 @@ function StackDrawer({ goals, onClose, onPickGoal }) {
                 <div className="text-xs uppercase tracking-widest" style={{color: COLORS.muted2, letterSpacing:'0.10em'}}>
                   {fmtDate(g.date)}
                 </div>
-                <div className="text-sm mt-0.5 truncate" style={{color: COLORS.ink}}>
-                  <span style={{color: nationTextColor(g.team)}}>{g.team}</span>
-                  <span className="mx-1" style={{color: COLORS.muted}}>vs</span>
-                  <span style={{color: COLORS.gold2}}>{g.opponent}</span>
+                <div className="font-serif mt-0.5 truncate" style={{color: COLORS.ink, fontSize: 13.5, fontWeight: 600}}>
+                  {g.scorer || 'Unknown scorer'}{g.own_goal ? ' (OG)' : ''}
+                </div>
+                <div className="mt-1 truncate flex items-center gap-2" style={{fontSize: 14}}>
+                  {g.team_abbr && <FlagImg abbr={g.team_abbr} size={18}/>}
+                  <span style={{color: COLORS.gold2, fontWeight: 600}}>{g.team}</span>
+                  <span style={{color: COLORS.muted2}}>vs</span>
+                  <span style={{color: COLORS.muted}}>{g.opponent}</span>
                 </div>
                 <div className="text-[11px] font-mono mt-0.5" style={{color: COLORS.muted}}>
                   {g.competition}{g.minute != null ? ` · ${g.minute}'` : ''} · {fmtBodyPart(g.body_part)}
