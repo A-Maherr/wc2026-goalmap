@@ -1,5 +1,10 @@
 function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) {
   const ref = React.useRef(null);
+  const [size, setSize] = React.useState(() => {
+    const vw = (typeof window !== 'undefined' && window.innerWidth) ? window.innerWidth : 600;
+    return { w: Math.max(280, Math.min(600, vw - 32)), h: 750 };
+  });
+
   const [tappedKey, setTappedKey] = React.useState(null);
   const isTouch = React.useMemo(
     () => typeof window !== 'undefined' && !!window.matchMedia
@@ -26,13 +31,44 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
   const PAD = 24;
   const fifaRatio = (VIEW_H_M * YD_TO_M) / FIFA_WIDTH_M;
 
-  // Fixed viewBox + CSS sizing (the SVG renders at width:100% of its parent,
-  // preserveAspectRatio keeps the geometry correct at any width). The internal
-  // math operates in viewBox units so dots and lines scale together — no
-  // ResizeObserver, so it can't get stuck at a wrong measured size on mobile.
-  const W = 600;
-  const H = (W - 2*PAD) * fifaRatio + 2*PAD;
-  const dotScale = 1;
+  React.useEffect(() => {
+    const el = ref.current?.parentElement;
+    if (!el) return;
+    const hCap = 660;
+    const measure = () => {
+      const vw = (typeof window !== 'undefined' && window.innerWidth) || 1e9;
+      const containerW = Math.min(el.getBoundingClientRect().width, vw);
+      if (!containerW) return;
+      let W = containerW;
+      let H = (W - 2*PAD) * fifaRatio + 2*PAD;
+      if (H > hCap) {
+        H = hCap;
+        W = (H - 2*PAD) / fifaRatio + 2*PAD;
+        if (W > containerW) { W = containerW; H = (W - 2*PAD) * fifaRatio + 2*PAD; }
+      }
+      setSize(prev => (Math.abs(prev.w - W) < 0.5 && Math.abs(prev.h - H) < 0.5) ? prev : {w: W, h: H});
+    };
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(el);
+    measure();
+    // Tailwind Play CDN applies styles after first paint, so the real layout
+    // width can land late — re-measure so we never stick at the seed size.
+    const t1 = setTimeout(measure, 120);
+    const t2 = setTimeout(measure, 450);
+    window.addEventListener('resize', measure);
+    window.addEventListener('orientationchange', measure);
+    return () => {
+      ro.disconnect();
+      clearTimeout(t1); clearTimeout(t2);
+      window.removeEventListener('resize', measure);
+      window.removeEventListener('orientationchange', measure);
+    };
+  }, [fifaRatio]);
+
+  const W = size.w, H = size.h;
+  // Scale fixed-pixel dots down with pitch width so they don't crowd on a
+  // narrow phone pitch; clamped so they never vanish. 520px = scale 1.
+  const dotScale = Math.max(0.6, Math.min(1, W / 520));
   const sx = data_y => PAD + (data_y / VIEW_W_M) * (W - PAD*2);
   const sy = data_x => PAD + ((X_MAX - data_x) / VIEW_H_M) * (H - PAD*2);
 
@@ -150,7 +186,7 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
       <div className="flex items-center gap-4 flex-wrap mb-5">
         <div className="min-w-0">
           <div className="text-xs uppercase tracking-widest" style={{color: COLORS.muted2, letterSpacing: '0.14em'}}>The shot map</div>
-          <div className="font-serif text-lg sm:text-2xl mt-1" style={{fontWeight: 600}}>
+          <div className="font-serif text-2xl mt-1" style={{fontWeight: 600}}>
             <span className="num-tabular">{dotsData.length.toLocaleString()}</span> goals plotted
             <span style={{color: COLORS.muted, fontStyle: 'italic', fontWeight: 400}}>
               {' '}in{' '}
@@ -198,8 +234,7 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
 
       <div className="flex gap-4 items-stretch">
         <div className="flex-1 relative flex justify-center" style={{minWidth: 0}}>
-          <svg ref={ref} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet"
-            style={{display:'block', width:'100%', height:'auto', maxWidth: 840, margin:'0 auto'}}
+          <svg ref={ref} width={W} height={H} style={{display:'block'}}
             onClick={()=>{ if (isTouch) { setHover(null); setTappedKey(null); } }}>
             <defs>
               <linearGradient id="grassGrad" x1="0" x2="0" y1="0" y2="1">
