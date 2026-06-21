@@ -361,7 +361,7 @@ function MomentStrip({ tournament, liveOverlay, todayISO }) {
           {liveOpen && liveMatches.length > 1 && (
             <div className="wc-toast" style={{
               position: 'absolute', top: 'calc(100% + 6px)', left: 0,
-              minWidth: 'min(300px, 88vw)', maxWidth: 'min(560px, 92vw)', zIndex: 60,
+              minWidth: 'min(300px, calc(100vw - 48px))', maxWidth: 'min(520px, calc(100vw - 48px))', zIndex: 60,
               padding: '10px 14px', borderRadius: 12,
               background: '#0d1a2e', border: '1px solid var(--line-2)',
               boxShadow: '0 18px 44px rgba(0,0,0,0.55)',
@@ -405,7 +405,7 @@ function MomentStrip({ tournament, liveOverlay, todayISO }) {
           {todayOpen && todaysAll.length > 0 && (
             <div className="wc-toast" style={{
               position: 'absolute', top: 'calc(100% + 6px)', right: 0,
-              minWidth: 'min(420px, 88vw)', maxWidth: 'min(560px, 92vw)', zIndex: 60,
+              minWidth: 'min(300px, calc(100vw - 48px))', maxWidth: 'min(520px, calc(100vw - 48px))', zIndex: 60,
               padding: '10px 14px', borderRadius: 12,
               background: '#0d1a2e', border: '1px solid var(--line-2)',
               boxShadow: '0 18px 44px rgba(0,0,0,0.55)',
