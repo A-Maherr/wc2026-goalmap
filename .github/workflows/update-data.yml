@@ -1,0 +1,65 @@
+name: update-data
+
+# Refreshes the live goal data and publishes it to the R2 bucket the site reads.
+# The data pipeline lives in a separate private repo; it's checked out into this
+# runner at job time and never stored here. Running in a public repo keeps the
+# Actions minutes free/unlimited.
+#
+# Triggered only by workflow_dispatch (a Cloudflare Worker cron fires it on an
+# adaptive cadence).
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: wc2026-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out the private data pipeline
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: A-Maherr/wc2026-pipeline
+          token: ${{ secrets.PIPELINE_TOKEN }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: '3.12'
+
+      - uses: browser-actions/setup-chrome@5526bcff02442ad0dc3cf912d1edc65d49465969  # v1.7.3
+        with:
+          chrome-version: stable
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip >/dev/null 2>&1
+          pip install -r requirements.txt >/dev/null 2>&1 || { echo "dependency install failed"; exit 1; }
+
+      # Persist the per-match cache between runs so each tick only fetches live +
+      # newly-finished matches, not the whole tournament. The run_id suffix is the
+      # rolling-cache idiom: the exact key never hits, so every run restores the
+      # latest via the prefix and saves an updated snapshot. GitHub LRU-evicts old
+      # entries, so the count self-limits; bump v1 → v2 to invalidate manually.
+      - name: Restore match cache
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57  # v4.2.0
+        with:
+          path: data/raw/match_cache
+          key: match-cache-v1-${{ github.run_id }}
+          restore-keys: |
+            match-cache-v1-
+
+      - name: Refresh and publish
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: xvfb-run -a python run.py

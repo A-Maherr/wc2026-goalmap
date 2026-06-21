@@ -1,0 +1,9 @@
+# Cloudflare Pages config for the WC 2026 goal-map dashboard.
+# Publish the static dashboard in web/ — there is no build step (the JSX is
+# transpiled in-browser by @babel/standalone), so Pages just serves the dir.
+#
+# Deploy locally or from CI:
+#   npx wrangler pages deploy web --project-name=wc2026-goalmap
+name = "wc2026-goalmap"
+compatibility_date = "2026-06-12"
+pages_build_output_dir = "web"
