@@ -205,9 +205,9 @@
 <!-- WC_DATA_BASE: empty on localhost (serve JSON from same dir); R2 public host in production. -->
 <script>
   window.WC_DATA_BASE =
-    (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '')
-      ? ''
-      : 'https://wc2026-data.playfootprint.com';
+    location.hostname.endsWith('github.io')
+      ? 'https://wc2026-data.playfootprint.com'
+      : '';
 </script>
 <script type="text/babel" data-presets="env,react" src="components/util.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="components/hero.jsx"></script>

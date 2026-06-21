@@ -35,7 +35,7 @@ function Hero({ stats, freshness }) {
           </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
+        <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:flex-wrap">
           <StatBlock big={stats.total.toLocaleString()} label="goals" sub={`${(stats.total / Math.max(stats.matchesPlayed, 1)).toFixed(1)} per match`} hi />
           <StatBlock big={stats.nationsScored.toLocaleString()} label="nations" sub="of 48 scored"/>
           <StatBlock
@@ -57,9 +57,9 @@ function Hero({ stats, freshness }) {
 
 function StatBlock({ big, label, sub, hi }) {
   return (
-    <div className="panel px-3.5 py-2" style={{minWidth: 108}}>
-      <div className="font-serif num-tabular" style={{
-        fontSize: 26, lineHeight: 1.05, fontWeight: 600,
+    <div className="panel px-3 py-2 sm:px-3.5 sm:min-w-[108px]">
+      <div className="font-serif num-tabular text-[22px] sm:text-[26px]" style={{
+        lineHeight: 1.05, fontWeight: 600,
         color: hi ? COLORS.gold2 : COLORS.ink,
         letterSpacing: '-0.01em',
       }}>{big}</div>

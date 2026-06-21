@@ -197,7 +197,7 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
             </span>
           </div>
         </div>
-        <div className="flex-1 flex justify-center" style={{minWidth: 0}}>
+        <div className="w-full flex justify-start mt-2 sm:flex-1 sm:justify-center sm:w-auto sm:mt-0" style={{minWidth: 0}}>
           <a href="https://github.com/A-Maherr/wc2026-goalmap" target="_blank" rel="noopener noreferrer"
              title="Built by Ahmed — view the source on GitHub"
              className="inline-flex items-center font-mono hover:opacity-80"

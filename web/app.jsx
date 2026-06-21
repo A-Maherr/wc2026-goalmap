@@ -251,7 +251,7 @@ function MomentStrip({ tournament, liveOverlay, todayISO }) {
 
   const Card = ({ label, accent, m, sub, isLive }) => (
     <div className="panel" style={{
-      padding: '12px 14px', minWidth: 0, flex: 1,
+      padding: '12px 14px', minWidth: 230, flex: '1 1 230px',
       borderColor: isLive ? 'rgba(200,16,46,.55)' : 'var(--line)',
       background: isLive
         ? 'linear-gradient(135deg, rgba(200,16,46,.10), rgba(11,30,55,1))'
@@ -346,7 +346,7 @@ function MomentStrip({ tournament, liveOverlay, todayISO }) {
     <div className="px-6 pt-4">
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <div
-          style={{ position: 'relative', flex: 1, minWidth: 0, display: 'flex' }}
+          style={{ position: 'relative', flex: '1 1 230px', minWidth: 230, display: 'flex' }}
           onMouseEnter={() => !isTouch && liveMatches.length > 1 && setLiveOpen(true)}
           onMouseLeave={() => !isTouch && setLiveOpen(false)}
           onClick={() => isTouch && liveMatches.length > 1 && setLiveOpen(o => !o)}
@@ -385,7 +385,7 @@ function MomentStrip({ tournament, liveOverlay, todayISO }) {
           sub={next ? `${fmtKickoff(next.kickoff_iso)}${tzAbbr ? ' · ' + tzAbbr : ''}` : ''}
         />
         <div
-          style={{ position: 'relative', flex: 1, minWidth: 0, display: 'flex' }}
+          style={{ position: 'relative', flex: '1 1 230px', minWidth: 230, display: 'flex' }}
           onMouseEnter={() => !isTouch && setTodayOpen(true)}
           onMouseLeave={() => !isTouch && setTodayOpen(false)}
           onClick={() => isTouch && todaysAll.length > 0 && setTodayOpen(o => !o)}
