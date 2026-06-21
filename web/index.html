@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WC26 Goal Map</title>
+<link rel="icon" type="image/png" href="assets/wc2026_official.png" />
+<link rel="apple-touch-icon" href="assets/wc2026_official.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;0,8..60,700;0,8..60,800;1,8..60,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://unpkg.com/d3-hexbin@0.2.2/build/d3-hexbin.min.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg-0: #081627;
+    --bg-1: #0a1f3d;
+    --panel: #11243d;
+    --panel-2: #173050;
+    --line: rgba(255,255,255,0.09);
+    --line-2: rgba(255,255,255,0.16);
+    --ink: #f4f5f7;
+    --muted: #9aa7bd;
+    --muted-2: #5d6b82;
+    --grass: #1f6f3a;
+    --grass-2: #2a8a4c;
+    --gold: #cda349;
+    --gold-2: #e6c167;
+    --wc-red: #c8102e;
+    --rf: #cda349;
+    --lf: #4d9bf0;
+    --hd: #c8102e;
+    --ot: #a855f7;
+  }
+  html, body { background: var(--bg-0); color: var(--ink); font-family: 'Inter', system-ui, sans-serif; }
+  /* `clip` not `hidden`: avoids making body a scroll container, which breaks the sticky sidebar. */
+  html, body { overflow-x: clip; max-width: 100%; }
+  #root { overflow-x: clip; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(31,111,58,0.18), transparent 60%),
+      radial-gradient(900px 500px at 0% 10%, rgba(205,163,73,0.06), transparent 60%),
+      linear-gradient(180deg, #081627 0%, #0a1f3d 40%, #081627 100%);
+    min-height: 100vh;
+  }
+  .font-serif { font-family: 'Source Serif 4', 'Source Serif Pro', Georgia, serif; font-feature-settings: "ss01"; }
+  .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+  .panel-2 { background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; }
+  .hairline { border-color: var(--line); }
+  .ink-muted { color: var(--muted); }
+  .ink-faint { color: var(--muted-2); }
+
+  .pill {
+    display:inline-flex; align-items:center; gap: 8px;
+    padding: 6px 12px; border-radius: 999px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--line);
+    font-size: 12px; color: var(--muted);
+  }
+
+  .seg {
+    display:inline-flex; padding: 4px; gap: 2px;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+  }
+  .seg button {
+    padding: 6px 12px; font-size: 12.5px; color: var(--muted);
+    border-radius: 7px; transition: all .15s;
+    letter-spacing: 0.01em;
+  }
+  .seg button:hover { color: var(--ink); }
+  .seg button.on { background: rgba(205,163,73,0.14); color: var(--gold-2); }
+
+  .chk { width: 14px; height:14px; border:1px solid var(--line-2); border-radius:3px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .chk.on { background: var(--gold); border-color: var(--gold); }
+  .chk.on::after { content:""; width: 8px; height: 4px; border-left: 1.5px solid #0a0f0d; border-bottom: 1.5px solid #0a0f0d; transform: rotate(-45deg); margin-top: -2px; }
+
+  .num-tabular { font-variant-numeric: tabular-nums; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.16); }
+
+  .drawer-bg { background: rgba(6,12,22,0.7); backdrop-filter: blur(8px); }
+
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  .gold-shimmer {
+    background: linear-gradient(110deg, #cda349 0%, #f0d488 25%, #cda349 50%, #a8852c 75%, #cda349 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shimmer 8s linear infinite;
+  }
+
+  .tt {
+    position: fixed; pointer-events: none; z-index: 50;
+    background: #0d1a2e; border: 1px solid var(--line-2); border-radius: 10px;
+    padding: 10px 12px; font-size: 12px; min-width: 220px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+  }
+  .tt-row { display:flex; justify-content: space-between; gap: 12px; }
+  .tt-row + .tt-row { margin-top: 3px; }
+
+  .legend-dot { width:8px; height:8px; border-radius: 50%; display:inline-block; }
+
+  table.gb { width: 100%; font-size: 13px; border-collapse: collapse; }
+  table.gb th, table.gb td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+  table.gb th { color: var(--muted); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; cursor: pointer; user-select: none; }
+  table.gb tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .accordion-head { cursor: pointer; }
+  .accordion-head:hover { color: var(--ink); }
+
+  details > summary { list-style: none; cursor: pointer; }
+  details > summary::-webkit-details-marker { display: none; }
+
+  .dot { transition: r 0.12s ease, opacity 0.12s ease; }
+
+  input[type=range] {
+    -webkit-appearance: none; appearance: none; height: 4px; background: rgba(255,255,255,0.08); border-radius: 2px; outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--gold); cursor: pointer; border: 2px solid #081627;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%; background: var(--gold); cursor: pointer; border: 2px solid #081627;
+  }
+
+  .search-input {
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--ink);
+    padding: 8px 12px; border-radius: 8px; font-size: 13px; width: 100%;
+  }
+  .search-input:focus { outline: none; border-color: var(--gold); }
+
+  .chip {
+    display:inline-flex; align-items: center; gap: 6px; padding: 3px 8px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--line); border-radius: 999px;
+    font-size: 11px; color: var(--muted);
+  }
+
+  .divider { height: 1px; background: var(--line); margin: 16px 0; }
+
+  .pitch-line { stroke: rgba(255,255,255,0.55); fill: none; stroke-width: 1.2; }
+  .pitch-grass { fill: url(#grassGrad); }
+
+  .ring-gold { box-shadow: 0 0 0 1px rgba(205,163,73,0.4), 0 0 24px -8px rgba(205,163,73,0.5); }
+
+  .placeholder-stripes {
+    background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 8px, transparent 8px 16px);
+  }
+
+  .crest {
+    width: 22px; height: 22px; border-radius: 4px;
+    background: var(--panel-2); border: 1px solid var(--line);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .kbd { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 6px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 4px; color: var(--muted); }
+
+  .arc-band rect { transition: opacity 0.15s, transform 0.15s; }
+  .arc-band rect:hover { opacity: 1 !important; }
+
+  .focus-outline:focus { outline: 1px solid var(--gold); outline-offset: 2px; }
+
+  .stat-card { position: relative; }
+  .stat-card::before {
+    content:""; position:absolute; inset:0; border-radius: 14px; pointer-events: none;
+    background: linear-gradient(180deg, rgba(205,163,73,0.05), transparent 60%);
+  }
+
+  .btn-soft { background: rgba(255,255,255,0.04); border: 1px solid var(--line); color: var(--muted); }
+  .btn-soft:hover { background: rgba(255,255,255,0.08); color: var(--ink); }
+  @keyframes wcPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.82); } }
+  @keyframes wcFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes wcLivePulse {
+    0%   { box-shadow: 0 0 0 0 rgba(200,16,46,.55); }
+    70%  { box-shadow: 0 0 0 10px rgba(200,16,46,0); }
+    100% { box-shadow: 0 0 0 0 rgba(200,16,46,0); }
+  }
+  .wc-toast {
+    animation: wcFadeIn .25s ease;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Load order matters: every file may reference globals from an earlier one (util first). -->
+<!-- WC_DATA_BASE: empty on localhost (serve JSON from same dir); R2 public host in production. -->
+<script>
+  window.WC_DATA_BASE =
+    (location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '')
+      ? ''
+      : 'https://wc2026-data.playfootprint.com';
+</script>
+<script type="text/babel" data-presets="env,react" src="components/util.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="components/hero.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="components/sidebar.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="components/pitch.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="components/golden_boot.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="components/stage_progression.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="components/cards.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="components/table.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="components/drawer.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="components/stack_drawer.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="app.jsx"></script>
+</body>
+</html>
