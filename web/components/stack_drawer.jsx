@@ -23,14 +23,14 @@ function StackDrawer({ goals, onClose, onPickGoal }) {
         background: COLORS.bg1,
         borderLeft: `1px solid ${COLORS.line2}`,
       }} onClick={e=>e.stopPropagation()}>
-        <div className="p-6 border-b sticky top-0 z-10" style={{borderColor: COLORS.line, background: COLORS.bg1}}>
+        <div className="p-4 sm:p-6 border-b sticky top-0 z-10" style={{borderColor: COLORS.line, background: COLORS.bg1}}>
           <div className="flex items-center justify-between">
             <div className="font-mono uppercase tracking-widest" style={{color: COLORS.gold2, fontWeight: 800, fontSize: 13, letterSpacing:'0.14em'}}>
               {goals.length} goals at this spot
             </div>
             <button onClick={onClose} className="text-xs px-2 py-1 rounded hover:text-white" style={{color: COLORS.muted, border: `1px solid ${COLORS.line}`}}>ESC ✕</button>
           </div>
-          <div className="font-serif mt-2" style={{fontSize: 32, fontWeight: 600, lineHeight: 1.1}}>
+          <div className="font-serif mt-2 text-2xl sm:text-[32px]" style={{fontWeight: 600, lineHeight: 1.1}}>
             <span className="num-tabular" style={{color: COLORS.gold2}}>{goals.length}</span>
             <span className="ml-2" style={{color: COLORS.muted, fontStyle: 'italic'}}>stacked</span>
           </div>

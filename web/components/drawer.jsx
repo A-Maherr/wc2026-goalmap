@@ -15,7 +15,7 @@ function GoalDrawer({ goal, onClose }) {
         background: COLORS.bg1,
         borderLeft: `1px solid ${COLORS.line2}`,
       }} onClick={e=>e.stopPropagation()}>
-        <div className="p-6 border-b sticky top-0 z-10" style={{borderColor: COLORS.line, background: COLORS.bg1}}>
+        <div className="p-4 sm:p-6 border-b sticky top-0 z-10" style={{borderColor: COLORS.line, background: COLORS.bg1}}>
           <div className="flex items-center justify-between">
             <div className="font-mono uppercase tracking-widest" style={{color: COLORS.gold2, fontWeight: 800, fontSize: 15, letterSpacing:'0.10em'}}>
               {goal.goal_number != null ? `GOAL #${goal.goal_number} OF TOURNAMENT` : ''}
@@ -25,13 +25,13 @@ function GoalDrawer({ goal, onClose }) {
           <div className="mt-3 text-[11px] uppercase tracking-widest" style={{color: COLORS.muted2, letterSpacing: '0.14em'}}>{fmtDate(goal.date)}</div>
           {goal.scorer && (
             <div className="mt-2 flex items-center gap-2">
-              <FlagImg abbr={goal.team_abbr} size={26}/>
-              <span className="font-serif" style={{fontSize: 26, fontWeight: 600, color: COLORS.ink}}>{goal.scorer}</span>
+              <FlagImg abbr={goal.team_abbr} size={22}/>
+              <span className="font-serif text-xl sm:text-[26px]" style={{fontWeight: 600, color: COLORS.ink}}>{goal.scorer}</span>
               {goal.scorer_jersey != null && <span className="font-mono text-sm" style={{color: COLORS.muted2}}>#{goal.scorer_jersey}</span>}
             </div>
           )}
           {/* Scorer's side of the running score is gold. */}
-          <div className="font-serif mt-1 flex items-center gap-3 flex-wrap" style={{fontSize: 28, fontWeight: 600, lineHeight: 1.15, paddingBottom: '0.05em'}}>
+          <div className="font-serif text-lg sm:text-[28px] mt-1 flex items-center gap-2 sm:gap-3 flex-wrap" style={{fontWeight: 600, lineHeight: 1.15, paddingBottom: '0.05em'}}>
             {(() => {
               const p = String(goal.score_after_goal || '').split(':');
               const hasScore = p.length === 2;
@@ -68,7 +68,7 @@ function GoalDrawer({ goal, onClose }) {
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <div className="text-[11px] uppercase tracking-widest mb-3" style={{color: COLORS.muted2, letterSpacing:'0.14em'}}>Shot location</div>
           <div className="relative" style={{aspectRatio: '105 / 68', background:'linear-gradient(180deg, #1a5e30, #155026)', borderRadius: 8, border: `1px solid ${COLORS.line}`}}>
             <svg width="100%" height="100%" viewBox="0 0 120 80" preserveAspectRatio="none">
@@ -98,7 +98,7 @@ function GoalDrawer({ goal, onClose }) {
           )}
         </div>
 
-        <div className="px-6 pb-6">
+        <div className="px-4 pb-4 sm:px-6 sm:pb-6">
           <div className="text-[11px] uppercase tracking-widest mb-3" style={{color: COLORS.muted2, letterSpacing:'0.14em'}}>Anatomy</div>
           <div className="grid grid-cols-2 gap-2">
             <KV label="Body part" value={<span><span className="legend-dot mr-1.5" style={{background: BODY_COLORS[goal.body_part]}}></span>{fmtBodyPart(goal.body_part)}</span>}/>
