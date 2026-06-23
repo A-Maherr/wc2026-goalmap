@@ -179,16 +179,17 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
   ];
 
   const legendItems = React.useMemo(() => {
-    if (color === 'body') return [
-      ['Right foot', COLORS.rf],
-      ['Left foot', COLORS.lf],
-      ['Header', COLORS.hd],
-      ['Other', COLORS.ot],
-    ];
-    if (color === 'situation') return Object.entries(SITUATION_COLORS).filter(([k]) => k !== 'unknown').map(([k,v])=>[fmtSituation(k), v]);
-    if (color === 'finish') return Object.entries(FINISH_COLORS).filter(([k]) => k !== 'unknown' && k !== 'tap_in').map(([k,v])=>[fmtFinish(k), v]);
-    return [];
-  }, [color]);
+    const field = color === 'body' ? 'body_part'
+                : color === 'situation' ? 'situation'
+                : color === 'finish' ? 'finish_style' : null;
+    if (!field) return [];
+    const cmap = color === 'body' ? BODY_COLORS : color === 'situation' ? SITUATION_COLORS : FINISH_COLORS;
+    const fmt = color === 'body' ? fmtBodyPart : color === 'situation' ? fmtSituation : fmtFinish;
+    // Only buckets actually on the pitch, most-scored first — no empty entries.
+    const cnt = {};
+    for (const d of dotsData) { const v = d[field]; if (v && v !== 'unknown') cnt[v] = (cnt[v] || 0) + 1; }
+    return Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a]).map(k => [fmt(k), cmap[k] || COLORS.muted]);
+  }, [color, dotsData]);
 
   // Penalty area: data x ∈ [102, 120], y ∈ [18, 62]
   const boxLeft = sx(18), boxRight = sx(62), boxBottom = sy(102), boxTop = sy(120);
@@ -612,9 +613,9 @@ function Pitch({ data, color, setColor, onPick, onPickStack, hover, setHover }) 
                   </div>
                 );
               })()}
-              {(hover.scorer || hover.own_goal) && (
+              {hover.scorer && (
                 <div className="font-serif mb-1" style={{fontSize: 15, fontWeight: 600, lineHeight: 1.15}}>
-                  {scorerLabel(hover)}
+                  {hover.scorer}
                   {hover.minute != null && <span className="font-mono ml-2" style={{fontSize: 12, color: COLORS.muted}}>{hover.minute}'</span>}
                 </div>
               )}

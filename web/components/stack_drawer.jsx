@@ -54,7 +54,7 @@ function StackDrawer({ goals, onClose, onPickGoal }) {
                   {fmtDate(g.date)}
                 </div>
                 <div className="font-serif mt-0.5 truncate" style={{color: COLORS.ink, fontSize: 13.5, fontWeight: 600}}>
-                  {g.own_goal ? 'Own Goal' : (g.scorer || 'Unknown scorer')}
+                  {g.scorer || 'Unknown scorer'}
                 </div>
                 <div className="mt-1 truncate flex items-center gap-2" style={{fontSize: 14}}>
                   {g.team_abbr && <FlagImg abbr={g.team_abbr} size={18}/>}

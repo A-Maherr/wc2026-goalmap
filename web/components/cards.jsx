@@ -288,7 +288,10 @@ function XGCard({ data, onXgFilter, activeXg }) {
 function BodyPartDonut({ data, onBodyPart }) {
   const counts = {};
   for (const d of data) counts[d.body_part] = (counts[d.body_part]||0)+1;
-  const order = ['right_foot','left_foot','header','other'];
+  // Present buckets only, most-scored first — gives own goals their own slice
+  // and drops empty categories.
+  const order = ['right_foot','left_foot','header','own_goal','other']
+    .filter(k => (counts[k]||0) > 0).sort((a,b)=>(counts[b]||0)-(counts[a]||0));
   const total = order.reduce((s,k)=>s+(counts[k]||0),0) || 1;
   const [hoveredSlice, setHoveredSlice] = React.useState(null);
   if (!data.length) return <CardEmpty kicker="01 / Body part"/>;

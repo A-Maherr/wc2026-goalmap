@@ -61,16 +61,20 @@ function FlagImg({ abbr, size = 18, style = {} }) {
   );
 }
 
+const OWN_GOAL_COLOR = '#2dd4bf';
 const BODY_COLORS = {
-  right_foot: COLORS.rf, left_foot: COLORS.lf, header: COLORS.hd, other: COLORS.ot, unknown: '#5b6560'
+  right_foot: COLORS.rf, left_foot: COLORS.lf, header: COLORS.hd, other: COLORS.ot,
+  own_goal: OWN_GOAL_COLOR, unknown: '#5b6560'
 };
 const SITUATION_COLORS = {
   open_play: '#cda349', penalty: '#e74c3c', counterattack: '#5dade2',
-  direct_free_kick: '#9b59b6', corner: '#2a8a4c', set_piece: '#e6a23c', unknown: '#5b6560'
+  direct_free_kick: '#9b59b6', corner: '#2a8a4c', set_piece: '#e6a23c',
+  own_goal: OWN_GOAL_COLOR, unknown: '#5b6560'
 };
 const FINISH_COLORS = {
   normal_shot: '#cda349', penalty: '#e74c3c', header: '#e67e22', free_kick: '#9b59b6',
-  tap_in: '#5dade2', rebound: '#2a8a4c', volley: '#f39c12', unknown: '#5b6560'
+  tap_in: '#5dade2', rebound: '#2a8a4c', volley: '#f39c12',
+  own_goal: OWN_GOAL_COLOR, unknown: '#5b6560'
 };
 const PRECISION_COLORS = {
   exact_event_data: '#2a8a4c', zone_estimate: '#e6a23c', unavailable: '#5b6560'
@@ -142,13 +146,13 @@ function fmtDate(d) {
 }
 
 function fmtBodyPart(b) {
-  return ({right_foot:'Right foot', left_foot:'Left foot', header:'Header', other:'Other', unknown:'Unknown'})[b] || b;
+  return ({right_foot:'Right foot', left_foot:'Left foot', header:'Header', other:'Other', own_goal:'Own Goal', unknown:'Unknown'})[b] || b;
 }
 function fmtSituation(s) {
-  return ({open_play:'Open play', penalty:'Penalty', counterattack:'Counter', direct_free_kick:'Direct FK', corner:'Corner', set_piece:'Set piece', unknown:'Unknown'})[s] || s;
+  return ({open_play:'Open play', penalty:'Penalty', counterattack:'Counter', direct_free_kick:'Direct FK', corner:'Corner', set_piece:'Set piece', own_goal:'Own Goal', unknown:'Unknown'})[s] || s;
 }
 function fmtFinish(f) {
-  return ({normal_shot:'Normal', penalty:'Penalty', header:'Header', free_kick:'Free kick', tap_in:'Tap-in', rebound:'Rebound', volley:'Volley', unknown:'Unknown'})[f] || f;
+  return ({normal_shot:'Normal', penalty:'Penalty', header:'Header', free_kick:'Free kick', tap_in:'Tap-in', rebound:'Rebound', volley:'Volley', own_goal:'Own Goal', unknown:'Unknown'})[f] || f;
 }
 function fmtPrecision(p) {
   return ({exact_event_data:'Exact', zone_estimate:'Zone', unavailable:'No location'})[p] || p;

@@ -23,11 +23,11 @@ function GoalDrawer({ goal, onClose }) {
             <button onClick={onClose} className="text-xs px-2 py-1 rounded hover:text-white" style={{color: COLORS.muted, border: `1px solid ${COLORS.line}`}}>ESC ✕</button>
           </div>
           <div className="mt-3 text-[11px] uppercase tracking-widest" style={{color: COLORS.muted2, letterSpacing: '0.14em'}}>{fmtDate(goal.date)}</div>
-          {(goal.scorer || goal.own_goal) && (
+          {goal.scorer && (
             <div className="mt-2 flex items-center gap-2">
               <FlagImg abbr={goal.team_abbr} size={22}/>
-              <span className="font-serif text-xl sm:text-[26px]" style={{fontWeight: 600, color: COLORS.ink}}>{scorerLabel(goal)}</span>
-              {!goal.own_goal && goal.scorer_jersey != null && <span className="font-mono text-sm" style={{color: COLORS.muted2}}>#{goal.scorer_jersey}</span>}
+              <span className="font-serif text-xl sm:text-[26px]" style={{fontWeight: 600, color: COLORS.ink}}>{goal.scorer}</span>
+              {goal.scorer_jersey != null && <span className="font-mono text-sm" style={{color: COLORS.muted2}}>#{goal.scorer_jersey}</span>}
             </div>
           )}
           {/* Scorer's side of the running score is gold. */}
@@ -107,7 +107,7 @@ function GoalDrawer({ goal, onClose }) {
             <KV label="Precision" value={<span><span className="legend-dot mr-1.5" style={{background: PRECISION_COLORS[goal.location_precision]}}></span>{fmtPrecision(goal.location_precision)}</span>}/>
             <KV label="Stage" value={goal.stage || '—'}/>
             <KV label="xG" value={goal.xg != null ? <span style={{color: COLORS.gold2}}>{Number(goal.xg).toFixed(2)}</span> : '—'}/>
-            <KV label="Scorer" value={goal.own_goal ? 'Own Goal' : (goal.scorer ? `${goal.scorer}${goal.scorer_jersey != null ? ` · #${goal.scorer_jersey}` : ''}` : '—')}/>
+            <KV label="Scorer" value={goal.scorer ? `${goal.scorer}${goal.scorer_jersey != null ? ` · #${goal.scorer_jersey}` : ''}` : '—'}/>
             <KV label="Position" value={goal.scorer_position || '—'}/>
           </div>
 

@@ -9,9 +9,23 @@ function Sidebar({ data, filters, setFilters, counts, goalsInMatchStats, open, o
   };
   const has = (set, val) => set instanceof Set && set.has(val);
 
-  const bodyParts = ['right_foot','left_foot','header','other'];
-  const situations = ['open_play','penalty','counterattack','direct_free_kick','corner','set_piece'];
-  const finishes = ['normal_shot','penalty','header','free_kick','rebound','volley'];
+  const bodyParts = ['right_foot','left_foot','header','other','own_goal'];
+  const situations = ['open_play','penalty','counterattack','direct_free_kick','corner','set_piece','own_goal'];
+  const finishes = ['normal_shot','penalty','header','free_kick','rebound','volley','own_goal'];
+
+  // Full-data tallies decide which buckets show and their order: a bucket only
+  // appears once it has goals, sorted most-scored first (stable under filtering).
+  const tallies = React.useMemo(() => {
+    const t = { body: {}, sit: {}, fin: {} };
+    for (const d of (data || [])) {
+      if (d.body_part) t.body[d.body_part] = (t.body[d.body_part] || 0) + 1;
+      if (d.situation) t.sit[d.situation] = (t.sit[d.situation] || 0) + 1;
+      if (d.finish_style) t.fin[d.finish_style] = (t.fin[d.finish_style] || 0) + 1;
+    }
+    return t;
+  }, [data]);
+  const present = (list, totals) =>
+    list.filter(k => (totals[k] || 0) > 0).sort((a, b) => (totals[b] || 0) - (totals[a] || 0));
 
   const activeCount =
     (filters.nation ? filters.nation.size : 0) +
@@ -150,19 +164,19 @@ function Sidebar({ data, filters, setFilters, counts, goalsInMatchStats, open, o
       </Section>
 
       <Section title="Body part">
-        {bodyParts.map(b => (
-          <CheckRow key={b} label={fmtBodyPart(b)} dot={BODY_COLORS[b]} count={counts.byBody[b]||0} on={has(filters.bodyPart, b)} onClick={()=>toggleSet('bodyPart', b)} />
+        {present(bodyParts, tallies.body).map(b => (
+          <CheckRow key={b} label={fmtBodyPart(b)} count={counts.byBody[b]||0} on={has(filters.bodyPart, b)} onClick={()=>toggleSet('bodyPart', b)} />
         ))}
       </Section>
 
       <Section title="Situation">
-        {situations.map(b => (
+        {present(situations, tallies.sit).map(b => (
           <CheckRow key={b} label={fmtSituation(b)} count={counts.bySit[b]||0} on={has(filters.situation, b)} onClick={()=>toggleSet('situation', b)} />
         ))}
       </Section>
 
       <Section title="Finish style">
-        {finishes.map(b => (
+        {present(finishes, tallies.fin).map(b => (
           <CheckRow key={b} label={fmtFinish(b)} count={counts.byFinish[b]||0} on={has(filters.finish, b)} onClick={()=>toggleSet('finish', b)} />
         ))}
       </Section>
