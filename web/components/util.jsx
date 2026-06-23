@@ -68,7 +68,7 @@ const BODY_COLORS = {
 };
 const SITUATION_COLORS = {
   open_play: '#cda349', penalty: '#e74c3c', counterattack: '#5dade2',
-  direct_free_kick: '#9b59b6', corner: '#2a8a4c', set_piece: '#e6a23c',
+  direct_free_kick: '#9b59b6', corner: '#2a8a4c', set_piece: '#e67e22',
   own_goal: OWN_GOAL_COLOR, unknown: '#5b6560'
 };
 const FINISH_COLORS = {
