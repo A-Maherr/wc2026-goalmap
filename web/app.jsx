@@ -83,8 +83,8 @@ function StageStrip({ data, filters, setFilters }) {
   };
 
   return (
-    <div className="px-6 pt-4">
-      <div className="panel" style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div className="px-6 pt-0">
+      <div className="panel" style={{ padding: '2px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
         <div className="font-mono" style={{ fontSize: 10, letterSpacing: '.16em', color: 'var(--muted-2)', textTransform: 'uppercase', padding: '0 12px 0 6px', whiteSpace: 'nowrap' }}>
           Stage
         </div>
@@ -972,12 +972,12 @@ function App() {
               pitch, lets you filter goals to one or more stages.
               The current stage (most-advanced we have any data for) is
               highlighted in green; selected stages render in gold. */}
-          <div className="mb-3 -mx-4 sm:-mx-6">
+          <div className="mb-4 -mx-4 sm:-mx-6">
             <StageStrip data={data} filters={filters} setFilters={setFilters}/>
           </div>
           <div className="grid grid-cols-12 gap-4 items-start">
             <div className="col-span-12 xl:col-span-8 min-w-0">
-              <Pitch
+              <PitchNetStage
                 data={filtered}
                 color={color} setColor={setColor}
                 onPick={setPicked}
