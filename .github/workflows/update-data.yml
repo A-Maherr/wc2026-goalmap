@@ -57,9 +57,9 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae  # v5.0.5
         with:
           path: data/raw/match_cache
-          key: match-cache-v4-${{ github.run_id }}
+          key: match-cache-v5-${{ github.run_id }}
           restore-keys: |
-            match-cache-v4-
+            match-cache-v5-
 
       - name: Refresh and publish
         env:
