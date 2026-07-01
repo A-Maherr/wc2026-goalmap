@@ -1,8 +1,7 @@
 // Holds the pitch (top-down) and the goal-net (front-on) views and animates a
 // "camera landing" between them: the pitch dives away and tilts, the goal rises
 // up to face you — and the reverse on the way back.
-function PitchNetStage({ data, color, setColor, onPick, onPickStack, hover, setHover }) {
-  const [view, setView] = React.useState('pitch');
+function PitchNetStage({ data, color, setColor, onPick, onPickStack, hover, setHover, view, setView }) {
   const [tf, setTf] = React.useState('none');
   const [op, setOp] = React.useState(1);
   const [trans, setTrans] = React.useState(false);

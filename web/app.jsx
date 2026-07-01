@@ -493,6 +493,7 @@ function App() {
   const clearAllFilters = () => setFilters(makeDefaultFilters());
   const nActiveFilters = activeFilterCount(filters);
   const [color, setColor] = useState('body');
+  const [view, setView] = useState('pitch');
   const [picked, setPicked] = useState(null);
   const [pickedStack, setPickedStack] = useState(null);
   const [hover, setHover] = useState(null);
@@ -980,6 +981,7 @@ function App() {
               <PitchNetStage
                 data={filtered}
                 color={color} setColor={setColor}
+                view={view} setView={setView}
                 onPick={setPicked}
                 onPickStack={setPickedStack}
                 hover={hover} setHover={setHover}
@@ -1038,7 +1040,7 @@ function App() {
         </main>
       </div>
 
-      <GoalDrawer goal={picked} onClose={()=>setPicked(null)}/>
+      <GoalDrawer goal={picked} view={view} onClose={()=>setPicked(null)}/>
       <StackDrawer goals={pickedStack} onClose={()=>setPickedStack(null)} onPickGoal={setPicked}/>
 
       {/* Mobile-only filter controls — Clear (when filters are active) sits

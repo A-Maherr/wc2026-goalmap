@@ -1,4 +1,4 @@
-function GoalDrawer({ goal, onClose }) {
+function GoalDrawer({ goal, view, onClose }) {
   React.useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') onClose(); };
     if (goal) window.addEventListener('keydown', onKey);
@@ -68,35 +68,65 @@ function GoalDrawer({ goal, onClose }) {
           </div>
         </div>
 
-        <div className="p-4 sm:p-6">
-          <div className="text-[11px] uppercase tracking-widest mb-3" style={{color: COLORS.muted2, letterSpacing:'0.14em'}}>Shot location</div>
-          <div className="relative" style={{aspectRatio: '105 / 68', background:'linear-gradient(180deg, #1a5e30, #155026)', borderRadius: 8, border: `1px solid ${COLORS.line}`}}>
-            <svg width="100%" height="100%" viewBox="0 0 120 80" preserveAspectRatio="none">
-              <rect x="1" y="1" width="118" height="78" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4" fill="none"/>
-              <line x1="60" y1="1" x2="60" y2="79" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4"/>
-              <circle cx="60" cy="40" r="9" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4" fill="none"/>
-              <rect x="102" y="18" width="18" height="44" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4" fill="none"/>
-              <rect x="114" y="30" width="6" height="20" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4" fill="none"/>
-              <rect x="0" y="18" width="18" height="44" stroke="rgba(255,255,255,0.5)" strokeWidth="0.4" fill="none"/>
-              {goal.x != null && (
-                <g>
-                  <circle cx={goal.x} cy={goal.y} r="2.4" fill={BODY_COLORS[goal.body_part]} stroke="white" strokeWidth="0.5"/>
-                  <line x1={goal.x} y1={goal.y} x2="120" y2="40" stroke={COLORS.gold} strokeWidth="0.4" strokeDasharray="1 1"/>
-                </g>
+        {/* The drawer shows the COMPLEMENT of the active view: on the pitch you
+            already see where it was struck, so show where it crossed the net; on
+            the net you see the crossing, so show where on the pitch it came from. */}
+        {view === 'pitch' ? (
+          <div className="p-4 sm:p-6">
+            <div className="text-[11px] uppercase tracking-widest mb-3" style={{color: COLORS.muted2, letterSpacing:'0.14em'}}>Where it crossed the line</div>
+            <div className="relative" style={{aspectRatio: `${NET_GEOM.W} / ${NET_GEOM.H}`, borderRadius: 8, overflow: 'hidden', border: `1px solid ${COLORS.line}`}}>
+              {goal.goal_mouth_y != null ? (
+                <svg width="100%" height="100%" viewBox={`0 0 ${NET_GEOM.W} ${NET_GEOM.H}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block' }}>
+                  <NetBackdrop idp="gnm"/>
+                  {(() => { const [cx, cy] = netProject(goal); return <circle cx={cx} cy={cy} r="8" fill={BODY_COLORS[goal.body_part]} stroke="white" strokeWidth="1.6"/>; })()}
+                  <NetFrame idp="gnm"/>
+                </svg>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-xs font-mono placeholder-stripes" style={{color: COLORS.muted2}}>NO CROSSING DATA AVAILABLE</div>
               )}
-            </svg>
-            {goal.x == null && (
-              <div className="absolute inset-0 flex items-center justify-center text-xs font-mono placeholder-stripes" style={{color: COLORS.muted2}}>NO SHOT COORDINATES AVAILABLE</div>
+            </div>
+            {goal.goal_mouth_y != null && (() => {
+              const u = (37.66 - goal.goal_mouth_y) / 7.32;
+              const v = 1 - goal.goal_mouth_z / 2.44;
+              const vert = v < 0.35 ? 'Upper' : v > 0.72 ? 'Low' : 'Mid';
+              const side = u < 0.3 ? 'left side' : u > 0.7 ? 'right side' : 'central';
+              return (
+                <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
+                  <div className="panel-2 px-3 py-2"><div className="text-[10px] font-mono" style={{color: COLORS.muted2}}>HEIGHT</div><div className="font-mono mt-0.5" style={{color: COLORS.gold2}}>{goal.goal_mouth_z.toFixed(2)} m</div></div>
+                  <div className="panel-2 px-3 py-2"><div className="text-[10px] font-mono" style={{color: COLORS.muted2}}>PLACEMENT</div><div className="font-mono mt-0.5" style={{color: COLORS.ink}}>{vert} · {side}</div></div>
+                </div>
+              );
+            })()}
+          </div>
+        ) : (
+          <div className="p-4 sm:p-6">
+            <div className="text-[11px] uppercase tracking-widest mb-3" style={{color: COLORS.muted2, letterSpacing:'0.14em'}}>Shot location</div>
+            {(() => {
+              const Wm = 520, PAD = 24;
+              const xMin = (goal.x != null && goal.x < 60) ? Math.max(0, Math.min(60, Math.floor((goal.x - 4) / 10) * 10)) : 60;
+              const Hm = (Wm - 2 * PAD) * (((120 - xMin) * (105 / 120)) / 68) + 2 * PAD;
+              const [cx, cy] = goal.x != null ? pitchProject(Wm, Hm, xMin)(goal.x, goal.y) : [0, 0];
+              return (
+                <div className="relative" style={{ aspectRatio: `${Wm} / ${Hm}`, borderRadius: 8, overflow: 'hidden', border: `1px solid ${COLORS.line}` }}>
+                  <svg width="100%" height="100%" viewBox={`0 0 ${Wm} ${Hm}`} preserveAspectRatio="xMidYMid meet" style={{ display: 'block' }}>
+                    <PitchBackdrop W={Wm} H={Hm} xMin={xMin} gid="grassGradMini"/>
+                    {goal.x != null && <circle cx={cx} cy={cy} r="7" fill={BODY_COLORS[goal.body_part]} stroke="white" strokeWidth="1.4"/>}
+                  </svg>
+                  {goal.x == null && (
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-mono placeholder-stripes" style={{ color: COLORS.muted2 }}>NO SHOT COORDINATES AVAILABLE</div>
+                  )}
+                </div>
+              );
+            })()}
+            {goal.x != null && (
+              <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
+                <div className="panel-2 px-3 py-2"><div className="text-[10px] font-mono" style={{color: COLORS.muted2}}>X</div><div className="font-mono mt-0.5" style={{color: COLORS.ink}}>{goal.x.toFixed(2)}</div></div>
+                <div className="panel-2 px-3 py-2"><div className="text-[10px] font-mono" style={{color: COLORS.muted2}}>Y</div><div className="font-mono mt-0.5" style={{color: COLORS.ink}}>{goal.y.toFixed(2)}</div></div>
+                <div className="panel-2 px-3 py-2"><div className="text-[10px] font-mono" style={{color: COLORS.muted2}}>DIST</div><div className="font-mono mt-0.5" style={{color: COLORS.gold2}}>{dist.toFixed(1)} yd</div></div>
+              </div>
             )}
           </div>
-          {goal.x != null && (
-            <div className="grid grid-cols-3 gap-2 mt-3 text-xs">
-              <div className="panel-2 px-3 py-2"><div className="text-[10px] font-mono" style={{color: COLORS.muted2}}>X</div><div className="font-mono mt-0.5" style={{color: COLORS.ink}}>{goal.x.toFixed(2)}</div></div>
-              <div className="panel-2 px-3 py-2"><div className="text-[10px] font-mono" style={{color: COLORS.muted2}}>Y</div><div className="font-mono mt-0.5" style={{color: COLORS.ink}}>{goal.y.toFixed(2)}</div></div>
-              <div className="panel-2 px-3 py-2"><div className="text-[10px] font-mono" style={{color: COLORS.muted2}}>DIST</div><div className="font-mono mt-0.5" style={{color: COLORS.gold2}}>{dist.toFixed(1)} yd</div></div>
-            </div>
-          )}
-        </div>
+        )}
 
         <div className="px-4 pb-4 sm:px-6 sm:pb-6">
           <div className="text-[11px] uppercase tracking-widest mb-3" style={{color: COLORS.muted2, letterSpacing:'0.14em'}}>Anatomy</div>

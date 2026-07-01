@@ -312,8 +312,147 @@ function FieldControls({ color, setColor, dotsData }) {
   );
 }
 
+// The pitch background (turf, stripes, lines, goal, direction) — shared so the
+// drawer's mini pitch is literally the same SVG as the main view, just scaled.
+// sx/sy match pitch.jsx exactly; a caller plots dots with the same formulas.
+function PitchBackdrop({ W, H, xMin, gid = 'grassGrad', showDirection = true }) {
+  const X_MAX = 120, VIEW_W_M = 80, PAD = 24;
+  const VIEW_H_M = X_MAX - xMin;
+  const sx = (y) => PAD + (y / VIEW_W_M) * (W - PAD * 2);
+  const sy = (x) => PAD + ((X_MAX - x) / VIEW_H_M) * (H - PAD * 2);
+  const boxLeft = sx(18), boxRight = sx(62), boxBottom = sy(102), boxTop = sy(120);
+  const sixLeft = sx(30), sixRight = sx(50), sixBottom = sy(114), sixTop = sy(120);
+  const arcRadiusY = (10 / VIEW_H_M) * (H - PAD * 2);
+  const arcRadiusX = (10 / VIEW_W_M) * (W - PAD * 2);
+  const depthPx = 2.0 * ((H - PAD * 2) / VIEW_H_M);
+  const gLeft = sx(36), gRight = sx(44), gFront = sy(120), gBack = gFront - depthPx;
+  return (
+    <>
+      <defs>
+        <linearGradient id={gid} x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#1a5e30"/>
+          <stop offset="100%" stopColor="#155026"/>
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width={W} height={H} rx="8" fill={`url(#${gid})`}/>
+      {(() => {
+        const breaks = [];
+        for (let v = 120; v >= xMin; v -= 6) breaks.push(v);
+        if (breaks[breaks.length - 1] !== xMin) breaks.push(xMin);
+        return breaks.slice(0, -1).map((hi, i) => {
+          const lo = breaks[i + 1];
+          const fill = i % 2 === 0 ? 'rgba(255,255,255,0.025)' : 'rgba(0,0,0,0.04)';
+          return (<rect key={i} x={PAD} y={sy(hi)} width={W - PAD * 2} height={sy(lo) - sy(hi)} fill={fill}/>);
+        });
+      })()}
+      <g shapeRendering="crispEdges">
+        <rect x={PAD} y={PAD} width={W - PAD * 2} height={H - PAD * 2} className="pitch-line"/>
+        <line x1={PAD} y1={sy(60)} x2={W - PAD} y2={sy(60)} className="pitch-line"/>
+        <rect x={boxLeft} y={boxTop} width={boxRight - boxLeft} height={boxBottom - boxTop} className="pitch-line"/>
+        <rect x={sixLeft} y={sixTop} width={sixRight - sixLeft} height={sixBottom - sixTop} className="pitch-line"/>
+        {xMin <= 18 && (<rect x={sx(18)} y={sy(18)} width={sx(62) - sx(18)} height={sy(0) - sy(18)} className="pitch-line"/>)}
+        {xMin <= 6 && (<rect x={sx(30)} y={sy(6)} width={sx(50) - sx(30)} height={sy(0) - sy(6)} className="pitch-line"/>)}
+      </g>
+      <circle cx={sx(40)} cy={sy(60)} r="2" fill="rgba(255,255,255,0.55)"/>
+      <path d={`M ${sx(30)} ${sy(60)} A ${arcRadiusX} ${arcRadiusY} 0 0 1 ${sx(50)} ${sy(60)}`} className="pitch-line"/>
+      {xMin < 60 && (<path d={`M ${sx(30)} ${sy(60)} A ${arcRadiusX} ${arcRadiusY} 0 0 0 ${sx(50)} ${sy(60)}`} className="pitch-line"/>)}
+      <circle cx={sx(40)} cy={sy(108)} r="2" fill="rgba(255,255,255,0.55)"/>
+      <path d={`M ${sx(32)} ${sy(102)} A ${arcRadiusX} ${arcRadiusY} 0 0 0 ${sx(48)} ${sy(102)}`} className="pitch-line"/>
+      {xMin <= 12 && (<circle cx={sx(40)} cy={sy(12)} r="2" fill="rgba(255,255,255,0.55)"/>)}
+      {xMin <= 12 && (<path d={`M ${sx(32)} ${sy(18)} A ${arcRadiusX} ${arcRadiusY} 0 0 1 ${sx(48)} ${sy(18)}`} className="pitch-line"/>)}
+      <g shapeRendering="crispEdges">
+        <rect x={gLeft} y={gBack} width={gRight - gLeft} height={depthPx} fill="rgba(0,0,0,0.30)"/>
+        {Array.from({ length: 8 }, (_, i) => { const x = gLeft + ((i + 1) / 9) * (gRight - gLeft); return (<line key={'vs' + i} x1={x} y1={gBack} x2={x} y2={gFront} stroke="rgba(255,255,255,0.35)" strokeWidth="0.6"/>); })}
+        {Array.from({ length: 4 }, (_, i) => { const y = gBack + ((i + 1) / 5) * depthPx; return (<line key={'hs' + i} x1={gLeft} y1={y} x2={gRight} y2={y} stroke="rgba(255,255,255,0.35)" strokeWidth="0.6"/>); })}
+        <line x1={gLeft} y1={gFront} x2={gLeft} y2={gBack} stroke={COLORS.gold2} strokeWidth="2.5" strokeLinecap="square"/>
+        <line x1={gRight} y1={gFront} x2={gRight} y2={gBack} stroke={COLORS.gold2} strokeWidth="2.5" strokeLinecap="square"/>
+        <line x1={gLeft} y1={gBack} x2={gRight} y2={gBack} stroke={COLORS.gold2} strokeWidth="2.5" strokeLinecap="square"/>
+      </g>
+      {showDirection && (
+        <text x={W / 2} y={H - 10} fill={COLORS.muted2} fontSize="10" fontFamily="JetBrains Mono" textAnchor="middle">↑ ATTACKING DIRECTION ↑</text>
+      )}
+    </>
+  );
+}
+
+// map a goal's (x,y) to the PitchBackdrop's pixel space (same formulas)
+function pitchProject(W, H, xMin) {
+  const PAD = 24, VIEW_W_M = 80, VIEW_H_M = 120 - xMin;
+  return (gx, gy) => [PAD + (gy / VIEW_W_M) * (W - PAD * 2), PAD + ((120 - gx) / VIEW_H_M) * (H - PAD * 2)];
+}
+
+// ── goal-net backdrop, shared so the drawer mini net is the identical SVG ──────
+const NET_GEOM = (() => {
+  const MW = 732, MH = 244, PT = 12, DEPTH = 42, IX = 20, PAD_X = 46;
+  const PAD_TOP = DEPTH + PT + 16, GRASS_H = 74;
+  const x0 = PAD_X, y0 = PAD_TOP, x1 = x0 + MW, y1 = y0 + MH;
+  const W = x1 + PAD_X, H = y1 + GRASS_H;
+  const A = [x0, y0], B = [x1, y0], C = [x1, y1], Dd = [x0, y1];
+  const C2 = [x1 - IX, y1 - DEPTH], D2 = [x0 + IX, y1 - DEPTH];
+  return { MW, MH, PT, DEPTH, IX, PAD_X, x0, y0, x1, y1, W, H, A, B, C, Dd, C2, D2 };
+})();
+const _nlerp = (p, q, t) => [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t];
+
+// goal-line crossing point -> the slanted net surface (flipped to match the pitch)
+function netProject(d) {
+  const { A, B, C2, D2 } = NET_GEOM;
+  const u = Math.min(1, Math.max(0, (37.66 - d.goal_mouth_y) / 7.32));
+  const v = Math.min(1, Math.max(0, 1 - d.goal_mouth_z / 2.44));
+  return _nlerp(_nlerp(A, B, u), _nlerp(D2, C2, u), v);
+}
+function _netMesh(tl, tr, br, bl, nu, nv, op, kp) {
+  const out = [], st = `rgba(255,255,255,${op})`;
+  for (let i = 0; i <= nu; i++) { const a = _nlerp(tl, tr, i / nu), b = _nlerp(bl, br, i / nu); out.push(<line key={kp + 'i' + i} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={st} strokeWidth="1.2" strokeLinecap="round"/>); }
+  for (let j = 0; j <= nv; j++) { const a = _nlerp(tl, bl, j / nv), b = _nlerp(tr, br, j / nv); out.push(<line key={kp + 'j' + j} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={st} strokeWidth="1.2" strokeLinecap="round"/>); }
+  return out;
+}
+
+function NetBackdrop({ idp = 'gn' }) {
+  const { W, H, y1, A, B, C, Dd, C2, D2 } = NET_GEOM;
+  const poly = (...ps) => ps.map(p => `${p[0]},${p[1]}`).join(' ');
+  const NQ = poly(A, B, C2, D2);
+  return (
+    <>
+      <defs>
+        <linearGradient id={`${idp}bg`} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#0f1c2b"/><stop offset="100%" stopColor="#0a121c"/></linearGradient>
+        <linearGradient id={`${idp}grass`} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#1a5e30"/><stop offset="100%" stopColor="#155026"/></linearGradient>
+        <linearGradient id={`${idp}post`} x1="0" x2="1" y1="0" y2="0"><stop offset="0%" stopColor="#c4cdd3"/><stop offset="42%" stopColor="#fff"/><stop offset="58%" stopColor="#fff"/><stop offset="100%" stopColor="#aab4bb"/></linearGradient>
+        <linearGradient id={`${idp}bar`} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="#c4cdd3"/><stop offset="42%" stopColor="#fff"/><stop offset="58%" stopColor="#fff"/><stop offset="100%" stopColor="#aab4bb"/></linearGradient>
+        <radialGradient id={`${idp}vig`} cx="50%" cy="42%" r="70%"><stop offset="0%" stopColor="rgba(0,0,0,0)"/><stop offset="100%" stopColor="rgba(0,0,0,0.34)"/></radialGradient>
+        <linearGradient id={`${idp}shade`} x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor="rgba(0,0,0,0)"/><stop offset="100%" stopColor="rgba(0,0,0,0.30)"/></linearGradient>
+        <radialGradient id={`${idp}glow`} cx="50%" cy="16%" r="62%"><stop offset="0%" stopColor="rgba(150,170,200,0.16)"/><stop offset="100%" stopColor="rgba(150,170,200,0)"/></radialGradient>
+      </defs>
+      <rect x="0" y="0" width={W} height={H} fill={`url(#${idp}bg)`}/>
+      <rect x="0" y="0" width={W} height={y1} fill={`url(#${idp}glow)`}/>
+      <rect x="0" y={y1} width={W} height={H - y1} fill={`url(#${idp}grass)`}/>
+      <polygon points={poly(Dd, C, C2, D2)} fill="#10401f"/>
+      <line x1="0" y1={y1} x2={W} y2={y1} stroke="rgba(255,255,255,0.55)" strokeWidth="2"/>
+      <polygon points={NQ} fill="#0b1622"/>
+      {_netMesh(A, A, D2, Dd, 8, 6, 0.26, 'L')}
+      {_netMesh(B, B, C2, C, 8, 6, 0.26, 'R')}
+      {_netMesh(A, B, C2, D2, 32, 12, 0.50, 'M')}
+      <polygon points={NQ} fill={`url(#${idp}shade)`}/>
+      <polygon points={NQ} fill={`url(#${idp}vig)`}/>
+      <path d={`M ${A[0]} ${A[1]} Q ${D2[0]} ${A[1]} ${D2[0]} ${D2[1]}`} stroke="#aab3b9" strokeWidth="5" strokeLinecap="round" fill="none"/>
+      <path d={`M ${B[0]} ${B[1]} Q ${C2[0]} ${B[1]} ${C2[0]} ${C2[1]}`} stroke="#aab3b9" strokeWidth="5" strokeLinecap="round" fill="none"/>
+      <line x1={D2[0]} y1={D2[1]} x2={C2[0]} y2={C2[1]} stroke="#aeb7bd" strokeWidth="3.5" strokeLinecap="round"/>
+    </>
+  );
+}
+function NetFrame({ idp = 'gn' }) {
+  const { x0, y0, x1, MW, MH, PT } = NET_GEOM;
+  return (
+    <>
+      <rect x={x0 - PT} y={y0 - PT} width={PT} height={MH + PT} fill={`url(#${idp}post)`} rx="2"/>
+      <rect x={x1} y={y0 - PT} width={PT} height={MH + PT} fill={`url(#${idp}post)`} rx="2"/>
+      <rect x={x0 - PT} y={y0 - PT} width={MW + 2 * PT} height={PT} fill={`url(#${idp}bar)`} rx="2"/>
+    </>
+  );
+}
+
 Object.assign(window, {
   sfFixtureKey, sfColorField, sfColorOf, sfPickStackColorLead, sfLegendItems,
   sfUseClusters, sfMakeTipStyle, ClusterLayer, GoalTooltip, StackTooltip,
-  FieldHeader, FieldControls,
+  FieldHeader, FieldControls, PitchBackdrop, pitchProject,
+  NET_GEOM, netProject, NetBackdrop, NetFrame,
 });
