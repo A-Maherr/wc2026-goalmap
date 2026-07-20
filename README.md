@@ -16,6 +16,11 @@
 
 ---
 
+> 🏁 **Tournament concluded (July 2026).** The World Cup 2026 is over, so live
+> updates have stopped — the automatic refresh (`update-data.yml`) is disabled
+> and the Cloudflare cron Worker that drove it has been decommissioned. The
+> dashboard stays online as a static archive of the completed tournament.
+
 Every goal is placed using **exact event-data coordinates** and projected onto an 120×80
 pitch. As matches play out, new goals appear on their own; no refresh, no redeploy.
 

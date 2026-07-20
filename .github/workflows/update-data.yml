@@ -25,6 +25,11 @@ concurrency:
 
 jobs:
   update:
+    # DECOMMISSIONED — the FIFA World Cup 2026 has concluded (July 2026). This
+    # refresh no longer runs; the `if: false` guard makes any stray/manual
+    # workflow_dispatch a no-op. The file is kept for history. To re-enable,
+    # remove this guard (and re-arm the Cloudflare cron Worker that dispatched it).
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
